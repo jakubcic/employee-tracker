@@ -8,11 +8,11 @@ VALUES ("Marketing"),
 
 INSERT INTO role (title, salary, department_id)
 VALUES ("Marketing Manager", 100000, 1), -- 1
-       ("Marketing Assistant", 55000, 1), -- 2
+       ("Marketing Associate", 55000, 1), -- 2
        ("Financial Manager", 110000, 2), -- 3
        ("Financial Analyst", 75000, 2), -- 4
-       ("Senior Software Engineer", 150000, 3), -- 5
-       ("Software Engineer", 120000, 3), -- 6
+       ("Software Engineering Manager", 150000, 3), -- 5
+       ("Senior Software Engineer", 120000, 3), -- 6
        ("Junior Software Engineer", 80000, 3), -- 7
        ("IT Manager", 100000, 4), -- 8
        ("IT Support", 60000, 4), -- 9
