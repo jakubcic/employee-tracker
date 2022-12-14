@@ -32,6 +32,9 @@ const init = () => {
         "Update employee role",
         "View employees by manager",
         "View employees by department",
+        "Delete department",
+        "Delete role",
+        "Delete employee",
         "Exit",
       ],
     })
@@ -71,6 +74,18 @@ const init = () => {
 
         case "View employees by department":
           viewEmployeesByDepartment();
+          break;
+
+        case "Delete department":
+          deleteDepartment();
+          break;
+
+        case "Delete role":
+          deleteRole();
+          break;
+
+        case "Delete employee":
+          deleteEmployee();
           break;
 
         case "Exit":
@@ -505,12 +520,113 @@ viewEmployeesByDepartment = () => {
 };
 
 // delete a department
+const deleteDepartment = () => {
+  // query the database for a list of departments
+  db.query("SELECT * FROM department", (err, rows) => {
+    if (err) {
+      console.log(err);
+    }
+    // create an array of department names
+    var departmentNames = [];
+    rows.forEach((row) => {
+      departmentNames.push(row.name);
+    });
+    // prompt user to select a department from a list
+    inquirer
+      .prompt({
+        name: "departmentName",
+        type: "list",
+        message: "Please select a department to delete:",
+        choices: departmentNames,
+      })
+      .then((answer) => {
+        // delete the selected department from the database with a prepared statement with the department name as a parameter
+        db.query(
+          "DELETE FROM department WHERE name = ?",
+          [answer.departmentName],
+          (err) => {
+            if (err) {
+              console.log(err);
+            }
+            console.log(`Deleted ${answer.departmentName} department.`);
+            init();
+          }
+        );
+      });
+  });
+};
 
 
 // delete a role
+const deleteRole = () => {
+  // query the database for a list of roles
+  db.query("SELECT * FROM role", (err, rows) => {
+    if (err) {
+      console.log(err);
+    }
+    // create an array of role titles
+    var roleTitles = [];
+    rows.forEach((row) => {
+      roleTitles.push(row.title);
+    });
+    // prompt user to select a role from a list
+    inquirer
+      .prompt({
+        name: "roleTitle",
+        type: "list",
+        message: "Please select a role to delete:",
+        choices: roleTitles,
+      })
+      .then((answer) => {
+        // delete the selected role from the database with a prepared statement with the role title as a parameter
+        db.query("DELETE FROM role WHERE title = ?", [answer.roleTitle], (err) => {
+          if (err) {
+            console.log(err);
+          }
+          console.log(`Deleted ${answer.roleTitle} role.`);
+          init();
+        });
+      });
+  });
+};
 
 
 // delete an employee
+const deleteEmployee = () => {
+  // query the database for a list of employees
+  db.query("SELECT * FROM employee", (err, rows) => {
+    if (err) {
+      console.log(err);
+    }
+    // create an array of employee names
+    var employeeNames = [];
+    rows.forEach((row) => {
+      employeeNames.push(`${row.first_name} ${row.last_name}`);
+    });
+    // prompt user to select an employee from a list
+    inquirer
+      .prompt({
+        name: "employeeName",
+        type: "list",
+        message: "Please select an employee to delete:",
+        choices: employeeNames,
+      })
+      .then((answer) => {
+        // delete the selected employee from the database with a prepared statement with the employee name as a parameter
+        db.query(
+          "DELETE FROM employee WHERE CONCAT(first_name, ' ', last_name) = ?",
+          [answer.employeeName],
+          (err) => {
+            if (err) {
+              console.log(err);
+            }
+            console.log(`Deleted ${answer.employeeName} employee.`);
+            init();
+          }
+        );
+      });
+  });
+};
 
 
 // view total utilized budget of a department
