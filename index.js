@@ -141,7 +141,7 @@ const addDepartment = () => {
           if (err) {
             console.log(err);
           }
-          console.log(`Added ${answer.department} to the database.`);
+          console.log(`Added ${answer.department} department to the database.`);
           init();
         }
       );
@@ -276,6 +276,8 @@ const addEmployee = () => {
                 rows.forEach((row) => {
                   managerNames.push(`${row.first_name} ${row.last_name}`);
                 });
+                // add No Manager option to the list
+                managerNames.push("No Manager");
                 // prompt user to select a manager from a list
                 inquirer
                   .prompt({
@@ -285,6 +287,10 @@ const addEmployee = () => {
                     choices: managerNames,
                   })
                   .then((answer) => {
+                    // if No Manager is selected, set the manager to null
+                    if (answer.manager === "No Manager") {
+                      answer.manager = null;
+                    }
                     // add the manager to the employee object
                     employee.manager = answer.manager;
                     // add employee to the database with a prepared statement with employee object values as parameters
@@ -309,9 +315,13 @@ const addEmployee = () => {
                         if (err) {
                           console.log(err);
                         }
-                        console.log(
-                          `Added ${employee.firstName} ${employee.lastName} with role ${employee.role} and manager ${employee.manager} to the database.`
-                        );
+                        if (employee.manager === null) {
+                          const message = `Added ${employee.firstName} ${employee.lastName} to the database as a ${employee.role}.`;
+                          console.log(message);
+                        } else {
+                          const message = `Added ${employee.firstName} ${employee.lastName} to the database as a ${employee.role} reporting to ${employee.manager}.`;
+                          console.log(message);
+                        }
                         init();
                       }
                     );
