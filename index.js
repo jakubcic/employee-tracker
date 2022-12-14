@@ -31,6 +31,7 @@ const init = () => {
         "Add employee",
         "Update employee role",
         "View employees by manager",
+        "View employees by department",
         "Exit",
       ],
     })
@@ -66,6 +67,10 @@ const init = () => {
 
         case "View employees by manager":
           viewEmployeesByManager();
+          break;
+
+        case "View employees by department":
+          viewEmployeesByDepartment();
           break;
 
         case "Exit":
@@ -413,97 +418,6 @@ updateEmployeeRole = () => {
   );
 };
 
-// // update employee manager function
-// updateEmployeeManager = () => {
-//   // query the database for a list of employees and their managers
-//   db.query(
-//     `SELECT employee.id, employee.first_name, employee.last_name, CONCAT(manager.first_name, ' ', manager.last_name) AS manager
-//     FROM employee LEFT JOIN employee manager ON employee.manager_id = manager.id`,
-//     (err, rows) => {
-//       if (err) {
-//         console.log(err);
-//       }
-//       // create an array of employee names
-//       var employeeNames = [];
-//       rows.forEach((row) => {
-//         employeeNames.push(`${row.first_name} ${row.last_name}`);
-//       });
-//       // prompt user to select an employee from a list
-//       inquirer
-//         .prompt({ 
-//           name: "employeeName",
-//           type: "list",
-//           message: "Please select the employee to update:",
-//           choices: employeeNames,
-//         })
-//         .then((answer) => {
-//           // query the database for the employee's current manager
-//           db.query(
-//             `SELECT CONCAT(manager.first_name, ' ', manager.last_name) AS manager
-//             FROM employee LEFT JOIN employee manager ON employee.manager_id = manager.id
-//             WHERE CONCAT(employee.first_name, ' ', employee.last_name) = ?`,
-//             [answer.employeeName],
-//             (err, rows) => {
-//               if (err) {
-//                 console.log(err);
-//               }
-//               // add the employee name and current manager to the employee object
-//               const employee = {
-//                 name: answer.employeeName,
-//                 currentManager: rows[0].manager,
-//               };
-//               // query the database for a list of managers
-//               db.query(
-//                 `SELECT employee.id, employee.first_name, employee.last_name, role.title 
-//                 FROM employee LEFT JOIN role ON employee.role_id = role.id 
-//                 WHERE role.title LIKE '%Manager%'`,
-//                 (err, rows) => {
-//                   if (err) {
-//                     console.log(err);
-//                   }
-//                   // create an array of manager names
-//                   var managerNames = [];
-//                   rows.forEach((row) => {
-//                     managerNames.push(`${row.first_name} ${row.last_name}`);
-//                   });
-//                   // remove the employee's current manager from the list of managers
-//                   managerNames = managerNames.filter(
-//                     (manager) => manager !== employee.currentManager
-//                   );
-//                   // prompt user to select a new manager from a list
-//                   inquirer
-//                     .prompt({
-//                       name: "newManager",
-//                       type: "list",
-//                       message: "Please select the employee's new manager:",
-//                       choices: managerNames,
-//                     })
-//                     .then((answer) => {
-//                       // add the new manager to the employee object
-//                       employee.newManager = answer.newManager;
-//                       // update the employee's manager in the database with a prepared statement with employee object values as parameters
-//                       db.query(
-//                         `UPDATE employee SET manager_id = (SELECT id FROM employee WHERE CONCAT(first_name, ' ', last_name) = ?) WHERE CONCAT(first_name, ' ', last_name) = ?`,
-//                         [employee.newManager, employee.name],
-//                         (err) => {
-//                           if (err) {
-//                             console.log(err);
-//                           }
-//                           console.log(
-//                             `Updated ${employee.name}'s manager from ${employee.currentManager} to ${employee.newManager}.`
-//                           );
-//                           init();
-//                         }
-//                       );
-//                     });
-//                 }
-//               );
-//             }
-//           );
-//         });
-//     }
-//   );
-// };
 
 // view employees by manager
 viewEmployeesByManager = () => {
@@ -550,7 +464,56 @@ viewEmployeesByManager = () => {
   );
 };
 
+// view employees by department
+viewEmployeesByDepartment = () => {
+  // query the database for a list of departments
+  db.query("SELECT * FROM department", (err, rows) => {
+    if (err) {
+      console.log(err);
+    }
+    // create an array of department names
+    var departmentNames = [];
+    rows.forEach((row) => {
+      departmentNames.push(row.name);
+    });
+    // prompt user to select a department from a list
+    inquirer
+      .prompt({
+        name: "departmentName",
+        type: "list",
+        message: "Please select a department to view its employees:",
+        choices: departmentNames,
+      })
+      .then((answer) => {
+        // query the database for a list of employees in the selected department
+        db.query(
+          `SELECT employee.id AS "Employee ID", employee.first_name AS "First Name", employee.last_name AS "Last Name", role.title AS "Job Title", department.name AS Department, role.salary AS "Salary", CONCAT(manager.first_name, ' ', manager.last_name) AS Manager
+          FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id LEFT JOIN employee manager ON employee.manager_id = manager.id
+          WHERE department.name = ?`,
+          [answer.departmentName],
+          (err, rows) => {
+            if (err) {
+              console.log(err);
+            }
+            // display the list of employees in the selected department
+            console.table(rows);
+            init();
+          }
+        );
+      });
+  });
+};
 
+// delete a department
+
+
+// delete a role
+
+
+// delete an employee
+
+
+// view total utilized budget of a department
 
 
 // start the application
