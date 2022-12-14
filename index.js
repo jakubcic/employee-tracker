@@ -77,13 +77,16 @@ const init = () => {
 // add functions to perform database queries that are called by the inquirer prompts
 // view departments as table with Department ID and Department Name
 const viewDepartments = () => {
-  db.query(`SELECT department.id AS "Department ID", department.name AS "Department Name" FROM department`, (err, rows) => {
-    if (err) {
-      console.log(err);
+  db.query(
+    `SELECT department.id AS "Department ID", department.name AS "Department Name" FROM department`,
+    (err, rows) => {
+      if (err) {
+        console.log(err);
+      }
+      console.table(rows);
+      init();
     }
-    console.table(rows);
-    init();
-  });
+  );
 };
 
 // view roles as a table with Title, Role ID, Department, and Salary
@@ -101,7 +104,6 @@ const viewRoles = () => {
     }
   );
 };
-
 
 // view employees as a table with Title, First Name, Last Name, Department, Salary, and Manager; sort by department
 const viewEmployees = () => {
@@ -121,7 +123,6 @@ const viewEmployees = () => {
     }
   );
 };
-
 
 // add department
 const addDepartment = () => {
@@ -265,7 +266,7 @@ const addEmployee = () => {
             db.query(
               `SELECT employee.id, employee.first_name, employee.last_name, role.title 
               FROM employee LEFT JOIN role ON employee.role_id = role.id 
-              WHERE role.title LIKE '%Manager%'`, 
+              WHERE role.title LIKE '%Manager%'`,
               (err, rows) => {
                 if (err) {
                   console.log(err);
@@ -296,9 +297,14 @@ const addEmployee = () => {
                         ) AS temp)
                       )`, // this is a nested query to get the id of the manager based on the manager name
                       // needed to do this to solve a bug where the manager id was not being inserted correctly
-                      // because of a MySQL 1093 error, see: 
+                      // because of a MySQL 1093 error, see:
                       // https://stackoverflow.com/a/9843719/9367208
-                      [employee.firstName, employee.lastName, employee.role, employee.manager],
+                      [
+                        employee.firstName,
+                        employee.lastName,
+                        employee.role,
+                        employee.manager,
+                      ],
                       (err) => {
                         if (err) {
                           console.log(err);
@@ -317,7 +323,80 @@ const addEmployee = () => {
     });
 };
 
-// TO DO: add update employee role function
+// update employee role function
+updateEmployeeRole = () => {
+  // query the database for a list of employees and their roles
+  db.query(
+    `SELECT employee.id, employee.first_name, employee.last_name, role.title
+    FROM employee LEFT JOIN role ON employee.role_id = role.id`,
+    (err, rows) => {
+      if (err) {
+        console.log(err);
+      }
+      // create an array of employee names and roles
+      var employeeNamesAndRoles = [];
+      rows.forEach((row) => {
+        employeeNamesAndRoles.push(
+          `${row.first_name} ${row.last_name} - ${row.title}`
+        );
+      });
+      // prompt user to select an employee and role from a list
+      inquirer
+        .prompt({
+          name: "employeeNameAndRole",
+          type: "list",
+          message: "Please select the employee to update:",
+          choices: employeeNamesAndRoles,
+        })
+        // split the employee name and role
+        .then((answer) => {
+          const employeeNameAndRole = answer.employeeNameAndRole.split(" - ");
+          // add the employee name and role to the employee object
+          const employee = {
+            name: employeeNameAndRole[0],
+            oldRole: employeeNameAndRole[1],
+          };
+          // query the database for a list of roles
+          db.query("SELECT * FROM role", (err, rows) => {
+            if (err) {
+              console.log(err);
+            }
+            // create an array of role titles
+            var roleTitles = [];
+            rows.forEach((row) => {
+              roleTitles.push(row.title);
+            });
+            // prompt user to select a role from a list
+            inquirer
+              .prompt({
+                name: "newRole",
+                type: "list",
+                message: "Please select the employee's new role:",
+                choices: roleTitles,
+              })
+              .then((answer) => {
+                // add the new role to the employee object
+                employee.newRole = answer.newRole;
+                // update the employee's role in the database with a prepared statement with employee object values as parameters
+                db.query(
+                  `UPDATE employee SET role_id = (SELECT id FROM role WHERE title = ?) WHERE CONCAT(first_name, ' ', last_name) = ?`,
+                  [employee.newRole, employee.name],
+                  (err) => {
+                    if (err) {
+                      console.log(err);
+                    }
+                    console.log(
+                      `Updated ${employee.name}'s role from ${employee.oldRole} to ${employee.newRole}.`
+                    );
+                    init();
+                  }
+                );
+              });
+          });
+        });
+    }
+  );
+};
 
 
 // start the application
