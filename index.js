@@ -1,8 +1,15 @@
 // import inquirer, mysql2
 const inquirer = require("inquirer");
 const mysql = require("mysql2");
+const table = require("./helpers/table");
 // require dotenv so we can hide our database credentials
 require("dotenv").config();
+
+const test = [
+  { name: "Jane", id: "1234", pastime: "Archery" },
+  { name: "John", id: "1235", pastime: "Knitting" },
+  { name: "Jess", id: "1236", pastime: "Fishing" },
+];
 
 // connect to database
 const db = mysql.createConnection(
@@ -113,7 +120,7 @@ const viewDepartments = () => {
       if (err) {
         console.log(err);
       }
-      console.table(rows);
+      table(rows);
       init();
     }
   );
@@ -129,7 +136,7 @@ const viewRoles = () => {
       if (err) {
         console.log(err);
       }
-      console.table(rows);
+      table(rows);
       init();
     }
   );
@@ -148,7 +155,7 @@ const viewEmployees = () => {
       if (err) {
         console.log(err);
       }
-      console.table(rows);
+      table(rows);
       init();
     }
   );
@@ -438,7 +445,6 @@ updateEmployeeRole = () => {
   );
 };
 
-
 // view employees by manager
 viewEmployeesByManager = () => {
   // query the database for a list of managers
@@ -475,7 +481,7 @@ viewEmployeesByManager = () => {
                 console.log(err);
               }
               // display the list of employees under the selected manager
-              console.table(rows);
+              table(rows);
               init();
             }
           );
@@ -516,7 +522,7 @@ viewEmployeesByDepartment = () => {
               console.log(err);
             }
             // display the list of employees in the selected department
-            console.table(rows);
+            table(rows);
             init();
           }
         );
@@ -561,7 +567,6 @@ const deleteDepartment = () => {
   });
 };
 
-
 // delete a role
 const deleteRole = () => {
   // query the database for a list of roles
@@ -584,17 +589,20 @@ const deleteRole = () => {
       })
       .then((answer) => {
         // delete the selected role from the database with a prepared statement with the role title as a parameter
-        db.query("DELETE FROM role WHERE title = ?", [answer.roleTitle], (err) => {
-          if (err) {
-            console.log(err);
+        db.query(
+          "DELETE FROM role WHERE title = ?",
+          [answer.roleTitle],
+          (err) => {
+            if (err) {
+              console.log(err);
+            }
+            console.log(`Deleted ${answer.roleTitle} role.`);
+            init();
           }
-          console.log(`Deleted ${answer.roleTitle} role.`);
-          init();
-        });
+        );
       });
   });
 };
-
 
 // delete an employee
 const deleteEmployee = () => {
@@ -633,7 +641,6 @@ const deleteEmployee = () => {
   });
 };
 
-
 // view total utilized budget of a department
 const viewBudget = () => {
   // query the database for a list of departments
@@ -651,11 +658,12 @@ const viewBudget = () => {
       .prompt({
         name: "departmentName",
         type: "list",
-        message: "Please select a department to view its total utilized budget:",
+        message:
+          "Please select a department to view its total utilized budget:",
         choices: departmentNames,
       })
       .then((answer) => {
-        // query the database for the total utilized budget of the selected department 
+        // query the database for the total utilized budget of the selected department
         db.query(
           `SELECT department.name AS Department, SUM(role.salary) AS "Total Utilized Budget"
           FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id
@@ -666,14 +674,13 @@ const viewBudget = () => {
               console.log(err);
             }
             // display the total utilized budget of the selected department
-            console.table(rows);
+            table(rows);
             init();
           }
         );
       });
   });
 };
-
 
 // start the application
 init();
