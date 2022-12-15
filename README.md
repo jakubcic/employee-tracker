@@ -50,6 +50,7 @@ This application uses v8.2.5 of the [inquirer](https://www.npmjs.com/package/inq
 ### External Code
 Within my `addEmployee` function I encountered a bug caused by MySQL. I need to make a nested query to get the `id` of the manager based on the manager name because of a MySQL 1093 error. I found the workaround on [stackoverflow](https://stackoverflow.com/a/9843719/9367208), though this potentially has a performance impact and that's something to consider.
 <br>
+
 I was originally using the built-in `console.table` to display the tables of data after the user chose one of the view options but I didn't like how it had an index column for every table. I considered that to be a waste of space in your terminal and a bad user experience. I found this neat function on [stackoverflow](https://stackoverflow.com/a/69874540/9367208) that will display a table given an array of data, but remove the index value. I added it as a helper function inside `./helpers`. 
 
 ## License
