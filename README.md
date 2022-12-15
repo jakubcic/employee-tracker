@@ -40,7 +40,7 @@ Once you have everything installed, including the dependencies, you can run `nod
 
 Here's a video demo
 
-[insert video here]
+https://user-images.githubusercontent.com/39972418/207764605-e5516ee5-9ece-43b3-b105-ec1a60a04515.mp4
 
 
 ## Credits
