@@ -26,6 +26,7 @@ const init = () => {
         "View departments",
         "View roles",
         "View employees",
+        "View total utilized budget of a department",
         "Add department",
         "Add role",
         "Add employee",
@@ -50,6 +51,10 @@ const init = () => {
 
         case "View employees":
           viewEmployees();
+          break;
+
+        case "View total utilized budget of a department":
+          viewBudget();
           break;
 
         case "Add department":
@@ -630,6 +635,44 @@ const deleteEmployee = () => {
 
 
 // view total utilized budget of a department
+const viewBudget = () => {
+  // query the database for a list of departments
+  db.query("SELECT * FROM department", (err, rows) => {
+    if (err) {
+      console.log(err);
+    }
+    // create an array of department names
+    var departmentNames = [];
+    rows.forEach((row) => {
+      departmentNames.push(row.name);
+    });
+    // prompt user to select a department from a list
+    inquirer
+      .prompt({
+        name: "departmentName",
+        type: "list",
+        message: "Please select a department to view its total utilized budget:",
+        choices: departmentNames,
+      })
+      .then((answer) => {
+        // query the database for the total utilized budget of the selected department 
+        db.query(
+          `SELECT department.name AS Department, SUM(role.salary) AS "Total Utilized Budget"
+          FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id
+          WHERE department.name = ?`,
+          [answer.departmentName],
+          (err, rows) => {
+            if (err) {
+              console.log(err);
+            }
+            // display the total utilized budget of the selected department
+            console.table(rows);
+            init();
+          }
+        );
+      });
+  });
+};
 
 
 // start the application
