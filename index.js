@@ -5,12 +5,6 @@ const table = require("./helpers/table");
 // require dotenv so we can hide our database credentials
 require("dotenv").config();
 
-const test = [
-  { name: "Jane", id: "1234", pastime: "Archery" },
-  { name: "John", id: "1235", pastime: "Knitting" },
-  { name: "Jess", id: "1236", pastime: "Fishing" },
-];
-
 // connect to database
 const db = mysql.createConnection(
   {
